@@ -109,10 +109,18 @@ while 1:
                     img[y:y+h, x:x+w, c] = (alpha_s * t_face[:, :, c] + alpha_l * img[y:y+h, x:x+w, c])        
         
         except:
-            t_face = cv2.resize(blure, (w, h))
-
-            for c in range(0, 3):
-                img[y:y+h, x:x+w, c] = (alpha_s * t_face[:, :, c] + alpha_l * img[y:y+h, x:x+w, c])
+            roi_gray = gray[y:y+h, x:x+w]
+            roi_color = img[y:y+h, x:x+w]
+            eyes = eye_cascade.detectMultiScale(roi_gray)
+            for (ex,ey,ew,eh) in eyes:
+                # cv2.rectangle(roi_color,(ex,ey),(ex+ew, ey+eh),(0,255,0),2)
+                # cv2.circle(roi_color, (ex + (ew//2), ey + (eh//2)), (ew), (0,0,255), 2)
+                
+                t_face = cv2.resize(eye, (ew, eh))
+                alpha_s = t_face[:, :, 3] / 255.0
+                alpha_l = 1.0 - alpha_s
+                for c in range(0, 3):
+                    roi_color[ey:ey+eh, ex:ex+ew, c] = (alpha_s * t_face[:, :, c] + alpha_l * roi_color[ey:ey+eh, ex:ex+ew, c])
 
 
     # print(len(faces))
